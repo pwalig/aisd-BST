@@ -54,7 +54,6 @@ int* generateArray(int n) {
     int* arr = new int[n];
     for (int i = 0; i < n; i++) {
         arr[i] = rand()%n;
-        cout << arr[i] << " ";
     }
     return arr;
 }
@@ -78,17 +77,37 @@ int main()
 
     // generate array and quicksort test
     srand(time(0));
-    int *arr;
+    int *arrA;
     int n = 10;
-    arr = generateArray(n);
+    arrA = generateArray(n);
+    //arrA = arrB;
 
-    quickSort(arr, 0, n - 1);
     cout << endl;
+
+    auto start = chrono::steady_clock::now();
+
+
+    int *arrB = new int[n];
     for (int i = 0; i < n; i++) {
-        cout << arr[i] << " ";
+        arrB[i] = arrA[i];
+        cout << arrA[i] << " ";
     }
 
-    delete[]arr;
+    cout << endl;
+    quickSort(arrB, 0, n - 1);
+
+    auto end = chrono::steady_clock::now();
+
+    cout << chrono::duration_cast<chrono::nanoseconds>(end - start).count() << "ns" << endl;
+
+    cout << endl;
+
+    for (int i = 0; i < n; i++) {
+        cout << arrB[i] << " ";
+    }
+
+    delete[]arrA;
+    delete[]arrB;
     return 0;
 }
 
