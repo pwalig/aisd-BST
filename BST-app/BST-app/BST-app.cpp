@@ -2,19 +2,76 @@
 //
 
 #include <iostream>
+#include <time.h>
+#include <chrono>
+using namespace std;
+
+int partition(int arr[], int start, int end)
+{
+
+    int pivot = arr[start];
+
+    int count = 0;
+    for (int i = start + 1; i <= end; i++) {
+        if (arr[i] <= pivot)
+            count++;
+    }
+    int pivotIndex = start + count;
+    swap(arr[pivotIndex], arr[start]);
+
+    int i = start, j = end;
+
+    while (i < pivotIndex && j > pivotIndex) {
+
+        while (arr[i] <= pivot) {
+            i++;
+        }
+
+        while (arr[j] > pivot) {
+            j--;
+        }
+
+        if (i < pivotIndex && j > pivotIndex) {
+            swap(arr[i++], arr[j--]);
+        }
+    }
+
+    return pivotIndex;
+}
+
+void quickSort(int arr[], int start, int end)
+{
+    if (start >= end)
+        return;
+    int p = partition(arr, start, end);
+    quickSort(arr, start, p - 1);
+    quickSort(arr, p + 1, end);
+}
+
+int* generateArray(int n) {
+    int* arr = new int[n];
+    for (int i = 0; i < n; i++) {
+        arr[i] = rand()%n;
+        cout << arr[i] << " ";
+    }
+    return arr;
+}
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    srand(time(0));
+    int *arr;
+    int n = 10;
+    arr = generateArray(n);
+
+
+    quickSort(arr, 0, n - 1);
+    cout << endl;
+    for (int i = 0; i < n; i++) {
+        cout << arr[i] << " ";
+    }
+
+    delete[]arr;
+    return 0;
 }
 
-// Uruchomienie programu: Ctrl + F5 lub menu Debugowanie > Uruchom bez debugowania
-// Debugowanie programu: F5 lub menu Debugowanie > Rozpocznij debugowanie
-
-// Porady dotyczące rozpoczynania pracy:
-//   1. Użyj okna Eksploratora rozwiązań, aby dodać pliki i zarządzać nimi
-//   2. Użyj okna programu Team Explorer, aby nawiązać połączenie z kontrolą źródła
-//   3. Użyj okna Dane wyjściowe, aby sprawdzić dane wyjściowe kompilacji i inne komunikaty
-//   4. Użyj okna Lista błędów, aby zobaczyć błędy
-//   5. Wybierz pozycję Projekt > Dodaj nowy element, aby utworzyć nowe pliki kodu, lub wybierz pozycję Projekt > Dodaj istniejący element, aby dodać istniejące pliku kodu do projektu
-//   6. Aby w przyszłości ponownie otworzyć ten projekt, przejdź do pozycji Plik > Otwórz > Projekt i wybierz plik sln
