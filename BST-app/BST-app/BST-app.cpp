@@ -4,7 +4,9 @@
 #include <iostream>
 #include <time.h>
 #include <chrono>
+#include "BST.h"
 using namespace std;
+
 
 int partition(int arr[], int start, int end)
 {
@@ -59,11 +61,26 @@ int* generateArray(int n) {
 
 int main()
 {
+    // BST demo
+    BST t;
+    t.insert(20);
+    t.insert(25);
+    t.insert(15);
+    t.insert(10);
+    t.insert(30);
+    t.display();
+    t.remove(20);
+    t.display();
+    t.remove(25);
+    t.display();
+    t.remove(30);
+    t.display();
+
+    // generate array and quicksort test
     srand(time(0));
     int *arr;
     int n = 10;
     arr = generateArray(n);
-
 
     quickSort(arr, 0, n - 1);
     cout << endl;
