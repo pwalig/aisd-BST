@@ -50,6 +50,14 @@ void quickSort(int arr[], int start, int end)
     quickSort(arr, p + 1, end);
 }
 
+bool contains(int arr[], int n, int key) {
+    for (int i = 0; i < n; i++) {
+        if (arr[i] == key)
+            return false;
+    }
+    return true;
+}
+
 int* generateArray(int n) {
     int* arr = new int[n];
     for (int i = 0; i < n; i++) {
