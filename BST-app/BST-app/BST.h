@@ -172,8 +172,8 @@ public:
         cout << endl;
     }
 
-    void search(int x) {
-        root = find(root, x);
+    node* search(int x) {
+        return find(root, x);
     }
 
     int get_height() {

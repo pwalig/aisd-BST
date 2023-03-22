@@ -2,6 +2,7 @@
 //
 
 #include <iostream>
+#include <fstream>
 #include <time.h>
 #include <chrono>
 #include <cmath>
@@ -119,92 +120,153 @@ void add_mid_element(int mod_a[], int arr[], int n, int l = 0, int r = -10) {
     }
 }
 
-void run_tests() {
+void run_tests(int iterations = 1, int unitDivisor = 1) {
+    ofstream c_out("creation_times.txt");
+    ofstream s_out("search_times.txt");
+    ofstream h_out("tree_heights.txt");
+    // c_out.precision(17); if result gets rounded use it
+
+    c_out << "size;Cb;Cta;Ctb\n";
+    s_out << "size;Sa;Sb;Sta;Stb\n";
+    h_out << "size;Hta;Htb\n";
+
     srand(time(0));
-    for (int n = 20; n < 25; n += 1) {
-        cout << "n: " << n << endl;
-        //generate A
-        int* arrA;
-        arrA = generateArray(n);
 
-        //measure Cb
-        auto start = chrono::steady_clock::now();
-        int* arrB = new int[n];
-        for (int i = 0; i < n; i++) {
-            arrB[i] = arrA[i];
-        }
-        quickSort(arrB, 0, n - 1);
-        auto end = chrono::steady_clock::now();
-        cout << "Cb: " << chrono::duration_cast<chrono::nanoseconds>(end - start).count() << "ns" << endl;
+    for (int n = 1000; n < 30001; n += 1000) {
+        //display and write n
+        cout << "n: " << n;
+        c_out << n << ";";
+        s_out << n << ";";
+        h_out << n << ";";
 
-        //measure Sa
-        double time_sa = 0;
-        for (int i = 0; i < n; i++) {
-            int x = arrB[i];
+        double Cb = 0.0, Cta = 0.0, Ctb = 0.0, Sa = 0.0, Sb = 0.0, Sta = 0, Stb = 0;
+        int Hta = 0, Htb = 0;
+
+        for (int iter = 0; iter < iterations; iter++)
+        {
+            //generate A
+            int* arrA;
+            arrA = generateArray(n);
+
+            //measure Cb
+            auto start = chrono::steady_clock::now();
+            int* arrB = new int[n];
+            for (int i = 0; i < n; i++) {
+                arrB[i] = arrA[i];
+            }
+            quickSort(arrB, 0, n - 1);
+            auto end = chrono::steady_clock::now();
+            Cb += chrono::duration_cast<chrono::nanoseconds>(end - start).count();
+
+            //measure Sa
+            for (int i = 0; i < n; i++) {
+                int x = arrB[i];
+                start = chrono::steady_clock::now();
+                simple_search(arrA, n, x);
+                end = chrono::steady_clock::now();
+                Sa += chrono::duration_cast<chrono::nanoseconds>(end - start).count();
+            }
+
+            //measure Sb
+            for (int i = 0; i < n; i++) {
+                int x = arrA[i];
+                start = chrono::steady_clock::now();
+                binary_search(arrB, 0, n, x);
+                end = chrono::steady_clock::now();
+                Sb += chrono::duration_cast<chrono::nanoseconds>(end - start).count();
+            }
+
+            //measure Cta + Hta
             start = chrono::steady_clock::now();
-            simple_search(arrA, n, x);
+            BST ta;
+            for (int i = 0; i < n; i++) {
+                ta.insert(arrA[i]);
+            }
             end = chrono::steady_clock::now();
-            time_sa += chrono::duration_cast<chrono::nanoseconds>(end - start).count();
-        }
-        cout << "Sa: " << time_sa << "ns\n";
+            Cta += chrono::duration_cast<chrono::nanoseconds>(end - start).count();
+            Hta += ta.get_height();
 
-        //measure Sb
-        double time_sb = 0;
-        for (int i = 0; i < n; i++) {
-            int x = arrA[i];
+            //create mid array
+            int* arrC = new int[n];
+            for (int i = 0; i < n; i++) {
+                arrC[i] = -1;
+            }
+            add_mid_element(arrC, arrB, n);
+
+            //measure Ctb + Htb
             start = chrono::steady_clock::now();
-            binary_search(arrB, 0, n, x);
+            BST tb;
+            for (int i = 0; i < n; i++) {
+                tb.insert(arrC[i]);
+            }
             end = chrono::steady_clock::now();
-            time_sb += chrono::duration_cast<chrono::nanoseconds>(end - start).count();
+            Ctb += chrono::duration_cast<chrono::nanoseconds>(end - start).count();
+            Htb += tb.get_height();
+
+            //measure Sta
+            for (int i = 0; i < n; i++) {
+                int x = arrA[i];
+                start = chrono::steady_clock::now();
+                ta.search(x);
+                end = chrono::steady_clock::now();
+                Sta += chrono::duration_cast<chrono::nanoseconds>(end - start).count();
+            }
+
+            //measure Stb
+            for (int i = 0; i < n; i++) {
+                int x = arrA[i];
+                start = chrono::steady_clock::now();
+                tb.search(x);
+                end = chrono::steady_clock::now();
+                Stb += chrono::duration_cast<chrono::nanoseconds>(end - start).count();
+            }
+
+            delete[]arrA;
+            delete[]arrB;
+            delete[]arrC;
+            cout << " | ";
         }
-        cout << "Sb: " << time_sb << "ns\n";
+        Cb /= iterations * unitDivisor;
+        Ctb /= iterations * unitDivisor;
+        Cta /= iterations * unitDivisor;
 
-        //measure Cta
-        start = chrono::steady_clock::now();
-        BST ta;
-        for (int i = 0; i < n; i++) {
-            ta.insert(arrA[i]);
-        }
-        end = chrono::steady_clock::now();
-        double time_cta = chrono::duration_cast<chrono::nanoseconds>(end - start).count();
-        cout << "Cta: " << time_cta << "ns\n";
-        cout << "height: " << ta.get_height() << endl;
-        ta.display(BST::Preorder);
+        Sa /= iterations * unitDivisor;
+        Sb /= iterations * unitDivisor;
+        Sta /= iterations * unitDivisor;
+        Stb /= iterations * unitDivisor;
 
+        Hta /= iterations;
+        Htb /= iterations;
 
-        //BROKEN
-        //create mid array
-        int* arrC = new int[n];
-        for (int i = 0; i < n; i++) {
-            arrC[i] = -1;
-        }
-        add_mid_element(arrC, arrB, n);
-        display_array(arrC, n);
+        // output results
+        c_out << Cb << ";";
+        c_out << Cta << ";";
+        c_out << Ctb << ";";
 
-        //measure Ctb 
-        start = chrono::steady_clock::now();
-        BST tb;
-        for (int i = 0; i < n; i++) {
-            tb.insert(arrC[i]);
-        }
-        end = chrono::steady_clock::now();
-        double time_ctb = chrono::duration_cast<chrono::nanoseconds>(end - start).count();
-        cout << "Ctb: " << time_cta << "ns\n";
-        cout << "height: " << tb.get_height() << endl;
-        tb.display(BST::Preorder);
+        s_out << Sa << ";";
+        s_out << Sb << ";";
+        s_out << Sta << ";";
+        s_out << Stb << ";";
+        
+        h_out << Hta << ";";
+        h_out << Htb << ";";
 
+        c_out << "\n";
+        s_out << "\n";
+        h_out << "\n";
+        
         cout << endl;
-
-        delete[]arrA;
-        delete[]arrB;
-        delete[]arrC;
     }
+
+    c_out.close();
+    s_out.close();
+    h_out.close();
 }
 
 int main()
 {
     //the code
-    run_tests();
+    run_tests(10, 1000000);
 
     return 0;
 }
